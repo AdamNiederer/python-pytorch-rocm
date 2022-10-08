@@ -170,6 +170,9 @@ prepare() {
   # https://bugs.archlinux.org/task/64981
   patch -N torch/utils/cpp_extension.py "${srcdir}"/fix_include_system.patch
 
+  # Work around https://github.com/facebookincubator/gloo/issues/332
+  patch -Np1 -i "${srcdir}"/fix-gloo.patch || true
+
   # Use system libuv
   patch -Np1 -i "${srcdir}"/use-system-libuv.patch
 
@@ -229,6 +232,10 @@ prepare() {
 }
 
 build() {
+  # Work around https://github.com/google/benchmark/issues/1398
+  # + https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
+  # + https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105329
+  export CXXFLAGS="${CXXFLAGS} -w -Wno-error=maybe-uninitialized"
   # PYTORCH_ROCM_ARCH is an env var used to populate the PYTORCH_ROCM_ARCH export
   # PYTORCH_ROCM_ARCH="gfx908"
   # NOTE: It's your responbility to validate the value of $PYTORCH_ROCM_ARCH.
